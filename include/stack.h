@@ -2,151 +2,113 @@
 
 #include <iostream>
 
-const int MAX_SIZE = 1000;
+const int MAX_STACK_SIZE = 1000;
 
-template <class T>
-class Vector
+template <typename T>
+class Stack
 {
 protected:
-	T* data;
-	size_t size;
-	size_t capacity;
+	T *pStack;
+	int Max;
 public:
-	Vector()
+	int Size;
+	Stack(int s = 10)
 	{
-		data = nullptr;
-		size = 0;
-		capacity = 0;
+		if (s < 0 || s > MAX_STACK_SIZE)
+			throw "Smth wrong!";
+		Size = 0;
+		Max = s;
+		pStack = new T[s];
 	}
 
-	~Vector()
+	Stack(const Stack &s)
 	{
-		if (data)
+		Size = s.Size;
+		Max = s.Max;
+		pStack = new T[Max];
+		for (int i = 0; i < Size; i++)
+			pStack[i] = s.pStack[i];
+	}
+
+	~Stack() 
+	{
+		if (pStack)
 		{
-			delete[] data;
-			data = nullptr;
+			delete[] pStack;
+			pStack = nullptr;
 		}
 	}
 
-	Vector(int n)
+	void Push(T elem)	// Добавить элемент в стек
 	{
-		if (n < 0 || n > MAX_SIZE)
+		if (Full())
+		{
+			Max = 2.0 * Max;
+			T* temp = new T[Max];
+			for (int i = 0; i < Size; i++)
+				temp[i] = pStack[i];
+			if (pStack)
+				delete[]pStack;
+			pStack = temp;
+		}
+		pStack[Size++] = elem;
+	}
+
+	T Pop()		// Удалить элемент из стека
+	{
+		auto ret = pStack[Size - 1];
+		if (Empty())
+			throw "Stack is empty";
+		else
+		{
+			pStack[--Size] = 0;
+		}
+
+		return ret;
+	}
+
+	T Top()
+	{
+		if (Empty())
+			throw "Stack is empty";
+		return pStack[Size - 1];
+	}
+
+	bool Empty() { return Size == 0; }	// Проверка на пустоту стека
+	bool Full() { return Max == Size; }	// Проверка на полноту стека
+	
+	Stack& operator=(const Stack &s)
+	{
+		Max = s.Max;
+		Size = s.Size;
+		if (pStack)
+			delete[] pStack;
+		pStack = new T[Max];
+
+		for (int i = 0; i < Size; i++)
+			pStack[i] = s.pStack[i];
+		return *this;
+	}
+
+	bool operator==(const Stack &s) const
+	{
+		if ((Size != s.Size) || (Max != s.Max))
+			return false;
+		for (int i = 0; i < Max; i++)
+		{
+			if (pStack[i] != s.pStack[i])
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const Stack &s) const { return !(s == *this); }
+	T operator[](int pos)
+	{
+		if (pos < 0 || pos > Max)
 			throw "Smth wrong";
-		else
-		{
-			size = n;
-			capacity = n;
-			data = new T[n];
-			for (int i = 0; i < n; i++)
-				data[i] = 0;
-		}
-	}
-
-	Vector(int n, T* A)
-	{
-		size = n;
-		capacity = n;
-		data = new T[size];
-		for (size_t i = 0; i < size; i++)
-			data[i] = A[i];
-	}
-
-	Vector(const Vector& v)
-	{
-		size = v.size;
-		capacity = v.capacity;
-		T* data = new T[capacity];
-		for (size_t i = 0; i < size; i++)
-			data[i] = v.data[i];
-		for (size_t i = size; i < capacity; i++)
-			data[i] = 0;
-	}
-
-	void push_back(T elem)
-	{
-		if (size == capacity)
-		{
-			capacity = 2.0 * capacity;
-			T* temp = new T[capacity];
-			for (int i = 0; i < size; i++)
-				temp[i] = data[i];
-			if (data)
-				delete[]data;
-			data = temp;
-		}
-		data[size++] = elem;
-	}
-
-	void pop_back()
-	{
-		data[--size] = 0;
-	}
-
-	void push_front(T elem)
-	{
-		insert(elem, 0);
-	}
-
-	void pop_front()
-	{
-		erase(0);
-	}
-
-	void resize(int n)
-	{
-		T* temp = new T[n];
-		if (size > n)
-		{
-			for (size_t i = 0; i < n; i++)
-				temp[i] = data[i];
-			size = n;
-		}
-		else
-		{
-			for (size_t i = 0; i < size; i++)
-				temp[i] = data[i];
-			for (size_t i = size; i < n; i++)
-				temp[i] = 0;
-		}
-		if (data)
-			delete[]data;
-		data = temp;
-	}
-
-	void insert(T elem, int index)
-	{
-		T* temp = new T[size + 1];
-		for (int i = 0; i < index; i++)
-			temp[i] = data[i];
-		temp[index] = elem;
-		for (i = index; i < size; i++)
-			temp[i + 1] = data[i];
-		if (data)
-			delete[] data;
-		data = temp;
-	}
-
-	void erase(int index)
-	{
-		if (index > size - 1)
-			return;
-		T* temp = new T[capacity];
-		for (int i = 0; i < index; i++)
-			temp[i] = data[i];
-		for (int i = index + 1; i < size; i++)
-			temp[i - 1] = data[i];
-		if (data)
-			delete[]data;
-		data = temp;
-		size--;
-	}
-
-	T& operator[](int index)
-	{
-		return this->data[index];
-	}
-	T operator[](int index)const
-	{
-		return this->data[index];
+		return pStack[pos];
 	}
 };
