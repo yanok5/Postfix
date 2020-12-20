@@ -5,8 +5,6 @@
 #include "stdlib.h"
 #include "stack.h"
 
-#define DOT '.'
-
 using namespace std;
 
 class Postfix
@@ -46,10 +44,8 @@ public:
 	~Postfix() {}
 	string GetInfix() { return infix; }
 	string GetPostfix() { return postfix; }
-	bool CheckInfix()
+	bool CheckOperators()
 	{
-		if (infix.empty())
-			return false;
 		if (Operator(infix[0]) && (infix[0] != '-') || Operator(infix.back()))
 			return false;
 		for (int i = 0; i < infix.size() - 1; i++)
@@ -57,23 +53,65 @@ public:
 			if (Operator(infix[i]) && Operator(infix[i + 1]))
 				return false;
 		}
-		int count1 = 0;
-		int count2 = 0;
-		int count_dot = 0;
+		return true;
+	}
+
+	bool CheckInfix()
+	{
+		CheckOperators();
+		int status = 0;
+		int brakets = 0;
 		for (int i = 0; i < infix.size(); i++)
 		{
-			if (infix[i] == ' ')
-				return false;
-			if (infix[i] == '(')
-				count1++;
-			if (infix[i] == ')')
-				count2++;
-			if (infix[i] == DOT)
-				count_dot++;
+			switch (status)
+			{
+			case 0:
+				if (infix[i] == '\0')
+					status = 2;
+				else if (infix[i] == '(')
+				{
+					brakets++;
+					status = 0;
+				}
+				else if (infix[i] >= '0' && infix[i] <= '9')
+				{
+					status = 1;
+					int dot = 0;
+					while (((infix[i + 1] >= '0') && (infix[i + 1] <= '9')) || (infix[i + 1] == '.'))
+					{
+						i++;
+						if (infix[i] == '.')
+							dot++;
+					}
+					if (dot > 1)
+						return false;
+				}
+				else return false;
+				break;
+			case 1:
+				if (infix[i] == '\0')
+					status = 2;
+				if (infix[i] == ')')
+				{
+					brakets--;
+					if (brakets >= 0)
+						status = 1;
+					if (brakets < 0)
+						return false;
+				}
+				if (Operator(i))
+					status = 0;
+				if ((!Operator(i)) && infix[i] != ')' && infix[i] != '\0')
+					return false;
+				break;
+			case 2:
+				if (brakets == 0)
+					return true;
+				if (brakets != 0)
+					return false;
+				break;
+			}
 		}
-		if (count1 != count2 || count_dot > 1)
-			return false;
-		return true;
 	}
 
 	string Postfix::ToPostfix()

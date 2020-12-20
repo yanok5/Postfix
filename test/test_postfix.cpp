@@ -25,15 +25,21 @@ TEST(Postfix, can_create_postfix_from_infix)
 	EXPECT_EQ("a b +", p.GetPostfix());
 }
 
-TEST(Postfix, CheckInfix_return_true_when_infix_is_correct)
+TEST(Postfix, CheckInfix_return_true_when_infix_is_correct)//палает
 {
 	Postfix p("a+b");
-	EXPECT_TRUE(p.CheckInfix());
+	EXPECT_TRUE(p.CheckOperators());
 }
 
 TEST(Postfix, CheckInfix_return_false_when_infix_is_invalid)
 {
 	Postfix p("(a+-b");
+	EXPECT_FALSE(p.CheckOperators());
+}
+
+TEST(Postfix, can_return_false_if_more_than_one_dot)
+{
+	Postfix p("1.23.45");
 	EXPECT_FALSE(p.CheckInfix());
 }
 
